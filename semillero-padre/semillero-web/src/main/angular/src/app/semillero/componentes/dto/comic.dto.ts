@@ -1,0 +1,33 @@
+import { EstadoEnum } from "../gestionar-comic/enums/estado.enum";
+import { ResultadoDTO } from "./resultado-dto";
+
+export class ComicDTO extends ResultadoDTO{
+
+    public id : number;
+	
+	public nombre : string;
+	
+	public editorial : string;
+	
+	public tematicaEnum : string;
+	
+	public coleccion : string;
+	
+	public numeroPaginas : number;
+	
+	public precio : number;
+	
+	public autores : string;
+
+	public color : boolean;
+	
+	public fechaVenta : Date;
+	
+	public estadoEnum : EstadoEnum;
+	
+	public cantidad : number;
+
+    constructor() {
+        super();
+    }
+}

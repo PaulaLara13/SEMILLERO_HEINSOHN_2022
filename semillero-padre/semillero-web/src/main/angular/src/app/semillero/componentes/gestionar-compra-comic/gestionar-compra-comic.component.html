@@ -1,0 +1,46 @@
+<div class="container">
+    <form action="">
+        <h1 translate [translateParams]="{nombreSemillero : tituloComplemento.nombreSemillero}">gestionarComic.titulo</h1>
+        <hr>
+        <br>
+        <pre>{{ comicDTO | json }}</pre>
+
+        <div class="row">
+            <div class="col-6">
+                <label for="txtNombre" translate>gestionarComic.nombre</label>
+                <input id="txtNombre" type="text" class="form-control" maxlength="50" formControlName="nombre"
+                    [ngClass]="{ 'is-invalid' : validoFormulario &&  f.nombre.errors }">
+                <div *ngIf="validoFormulario &&  f.nombre.errors">
+                    <span class="text-danger" *ngIf="f.nombre.errors.required">Campo requerido</span>
+                    <!-- <span class="text-danger" *ngIf="f.nombre.errors.maxlength">Solo se permite 50 caracteres</span> -->
+                </div>
+            </div>
+
+            <div class="col-6">
+                <label for="txtCantidad" translate>gestionarComic.cantidad</label>
+                <input id="txtCantidad" type="text" class="form-control" maxlength="50" formControlName="cantidad"
+                    [ngClass]="{ 'is-invalid' : validoFormulario &&  f.cantidad.errors }">
+                <div *ngIf="validoFormulario && f.cantidad.errors">
+                    <span class="text-danger" *ngIf="f.cantidad.errors.required">Campo requerido</span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <span></span>
+            </div>
+            <div class="col-6 text-right ">
+                <button type="button" class="btn btn-primary" (click)="ComprarComic()">Comprar</button>
+            </div>
+        </div>
+        <br>
+        <div *ngIf="mostrarItem" class="alert alert-info" role="alert">
+            <button type="button" class="btn btn-primary" (click)="cerrar()">Cerrar</button>      
+        </div>
+        <br>
+
+        <div class="alert alert-warning" role="alert" *ngIf="!mostrarMensajeFallido">
+            {{ mensajeEjecucion }}
+        </div>
+    </form>
+</div>
