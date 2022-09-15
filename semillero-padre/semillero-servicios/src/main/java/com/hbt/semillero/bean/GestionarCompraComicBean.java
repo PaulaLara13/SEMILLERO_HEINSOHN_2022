@@ -17,6 +17,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 
 import com.hbt.semillero.comic.Comic;
+import com.hbt.semillero.dtos.ComicDTO;
 import com.hbt.semillero.dtos.CompraComicDTO;
 import com.hbt.semillero.enums.EstadoEnum;
 import com.hbt.semillero.interfaces.IGestionarCompraComic;
@@ -39,40 +40,34 @@ public class GestionarCompraComicBean implements IGestionarCompraComic {
 	@SuppressWarnings("unchecked")
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public CompraComicDTO realizarCompraComic(CompraComicDTO compraComicDTO) {
-		String consultaComicCompra = "SELECT c.cantidad FROM Comic c WHERE idComic = :idComic ";
-		String consultaEstado = "SELECT c.estado FROM Comic c WHERE idComic = :idComic ";
+		String consultaComicCompra = "SELECT new com.hbt.semillero.dtos.ComicDTO(estado, cantidad) FROM Comic WHERE id = :idComic ";
 		try {
-			Query queryConsultaComicCompra = em.createQuery(consultaComicCompra);
-			queryConsultaComicCompra.setParameter("idComic", compraComicDTO.getIdComic());
-			Long comicConsultado = (Long) queryConsultaComicCompra.getSingleResult();
 			Comic comicConsultadoEntidad = new Comic();
 
-			Query queryConsultaComicCompraEstado = em.createQuery(consultaEstado);
-			queryConsultaComicCompraEstado.setParameter("idComic", compraComicDTO.getIdComic());
-			String comicConsultado2 = (String) queryConsultaComicCompraEstado.getSingleResult();
+			Query queryConsultaComicCompra = em.createQuery(consultaComicCompra);
+			queryConsultaComicCompra.setParameter("idComic", compraComicDTO.getIdComic());
+			ComicDTO comicConsultado = (ComicDTO) queryConsultaComicCompra.getSingleResult();
 
-			if (comicConsultado != null) {
-				int resultadoCantidad = comicConsultado.intValue() - compraComicDTO.getCantidad();
-				if (comicConsultado2 == EstadoEnum.INACTIVO.getEstado()) {
-					throw new Exception("El comic seleccionado no cuenta con stock en bodega");
-				} else if (resultadoCantidad < 0) {
-					throw new Exception("La cantidad existente del comic es: " + comicConsultadoEntidad.getCantidad()
-							+ ", y supera la ingresada");
+			int resultadoCantidad = comicConsultado.getCantidad() - compraComicDTO.getCantidad();
+			if (comicConsultado.getEstadoEnum() == EstadoEnum.INACTIVO) {
+				throw new Exception("El comic seleccionado no cuenta con stock en bodega");
+			} else if (resultadoCantidad < 0) {
+				throw new Exception("La cantidad existente del comic es: " + comicConsultadoEntidad.getCantidad()
+						+ ", y supera la ingresada");
+			} else {
+				if (resultadoCantidad == 0) {
+					comicConsultadoEntidad.setCantidad(0);
+					comicConsultadoEntidad.setEstado(EstadoEnum.INACTIVO);
 				} else {
-					if (resultadoCantidad == 0) {
-						comicConsultadoEntidad.setCantidad(0);
-						comicConsultadoEntidad.setEstado(EstadoEnum.INACTIVO);
-					} else {
-						comicConsultadoEntidad.setCantidad(resultadoCantidad);
-					}
-					long miliseconds = System.currentTimeMillis();
-					Date date = new Date(miliseconds);
-					comicConsultadoEntidad.setFechaVenta(date);
-					em.persist(comicConsultado);
-					compraComicDTO.setExitoso(true);
-					compraComicDTO.setMensajeEjecucion(
-							"La compra del comic " + comicConsultadoEntidad.getNombre() + " fue exitosa");
+					comicConsultadoEntidad.setCantidad(resultadoCantidad);
 				}
+				long miliseconds = System.currentTimeMillis();
+				Date date = new Date(miliseconds);
+				comicConsultadoEntidad.setFechaVenta(date);
+				em.persist(comicConsultadoEntidad);
+				compraComicDTO.setExitoso(true);
+				compraComicDTO.setMensajeEjecucion(
+						"La compra del comic " + comicConsultadoEntidad.getNombre() + " fue exitosa");
 			}
 		} catch (NonUniqueResultException nure) {
 			LOGGER.info("Se ha presentado NonUniqueResultException: " + nure.getMessage());
